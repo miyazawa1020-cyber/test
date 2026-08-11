@@ -59,7 +59,6 @@
       const jokeBtn = document.getElementById('jokeBtn');
       const programmingBtn = document.getElementById('programmingBtn');
 
-      // ローディング表示
       loadingEl.style.display = 'block';
       jokeDisplayEl.style.display = 'none';
       errorEl.style.display = 'none';
@@ -76,7 +75,6 @@
           jokeDisplayEl.innerHTML = `<p class="joke-text">${data.joke}</p>`;
           jokeDisplayEl.style.display = 'block';
           
-          // 履歴に追加
           addToHistory(data.joke);
           errorEl.style.display = 'none';
         } else {
