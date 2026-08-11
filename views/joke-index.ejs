@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ランダムジョークジェネレータ</title>
+  <link rel="stylesheet" href="/joke-style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="joke-app">
+      <div class="header">
+        <h1>🎭 ランダムジョークジェネレータ</h1>
+        <p>面白いジョークを毎回取得！</p>
+      </div>
+
+      <div class="joke-display" id="jokeDisplay">
+        <p class="joke-text">ボタンをクリックしてジョークを取得してください</p>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="jokeBtn" onclick="getJoke()">
+          ジョークを取得
+        </button>
+        <button class="btn btn-secondary" id="programmingBtn" onclick="getProgrammingJoke()">
+          プログラミングジョーク
+        </button>
+      </div>
+
+      <div class="loading" id="loading" style="display:none;">
+        <div class="spinner"></div>
+        <p>ジョークを取得中...</p>
+      </div>
+
+      <div class="error" id="errorMsg" style="display:none;"></div>
+
+      <div class="history">
+        <h3>📝 最近取得したジョーク</h3>
+        <ul id="jokeHistory"></ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let jokeHistory = [];
+
+    async function getJoke() {
+      await fetchJoke('/api/joke');
+    }
+
+    async function getProgrammingJoke() {
+      await fetchJoke('/api/joke/programming');
+    }
+
+    async function fetchJoke(endpoint) {
+      const loadingEl = document.getElementById('loading');
+      const jokeDisplayEl = document.getElementById('jokeDisplay');
+      const errorEl = document.getElementById('errorMsg');
+      const jokeBtn = document.getElementById('jokeBtn');
+      const programmingBtn = document.getElementById('programmingBtn');
+
+      // ローディング表示
+      loadingEl.style.display = 'block';
+      jokeDisplayEl.style.display = 'none';
+      errorEl.style.display = 'none';
+      jokeBtn.disabled = true;
+      programmingBtn.disabled = true;
+
+      try {
+        const response = await fetch(endpoint);
+        const data = await response.json();
+
+        loadingEl.style.display = 'none';
+
+        if (data.success) {
+          jokeDisplayEl.innerHTML = `<p class="joke-text">${data.joke}</p>`;
+          jokeDisplayEl.style.display = 'block';
+          
+          // 履歴に追加
+          addToHistory(data.joke);
+          errorEl.style.display = 'none';
+        } else {
+          errorEl.textContent = data.joke || 'エラーが発生しました';
+          errorEl.style.display = 'block';
+          jokeDisplayEl.style.display = 'none';
+        }
+      } catch (error) {
+        loadingEl.style.display = 'none';
+        errorEl.textContent = 'ジョークの取得に失敗しました: ' + error.message;
+        errorEl.style.display = 'block';
+      } finally {
+        jokeBtn.disabled = false;
+        programmingBtn.disabled = false;
+      }
+    }
+
+    function addToHistory(joke) {
+      jokeHistory.unshift(joke);
+      if (jokeHistory.length > 5) {
+        jokeHistory.pop();
+      }
+
+      const historyEl = document.getElementById('jokeHistory');
+      historyEl.innerHTML = jokeHistory.map((j, index) => 
+        `<li>${index + 1}. ${j.substring(0, 50)}${j.length > 50 ? '...' : ''}</li>`
+      ).join('');
+    }
+  </script>
+</body>
+</html>
